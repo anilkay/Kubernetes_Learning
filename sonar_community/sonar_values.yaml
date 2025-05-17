@@ -1,0 +1,35 @@
+community:
+  enabled: true
+monitoringPasscodeSecretName: sonarqube-monitoring-passcode
+monitoringPasscodeSecretKey:  monitoring-passcode
+ingress:
+  enabled: true
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+  hosts:
+    - name: sonarqube.local
+      path: /
+      pathType: Prefix
+
+postgresql:
+  enabled: true
+  existingSecret: sonar-postgres-secret
+  postgresqlUsername: postgres
+  persistence:
+    enabled: true
+    size: 5Gi
+
+persistence:
+  enabled: true
+  size: 5Gi
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+service:
+  type: ClusterIP
