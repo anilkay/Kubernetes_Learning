@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      affinity:
+       podAffinity:
+         requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+             matchLabels:
+               app: mysql
+            topologyKey: kubernetes.io/hostname
+      containers:
+        - name: wordpress
+          image: wordpress:6.8.1
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "500m"
+            limits:
+              memory: "512Mi"
+              cpu: "1000m"
+          ports:
+            - containerPort: 80
+          env:
+            - name: WORDPRESS_DB_HOST
+              value: mysql:3306
+            - name: WORDPRESS_DB_NAME
+              value: wordpress
+            - name: WORDPRESS_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: wordpress-secrets
+                  key: wordpress-db-user
+            - name: WORDPRESS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wordpress-secrets
+                  key: wordpress-db-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress
+  namespace: production
+spec:
+  selector:
+    app: wordpress
+  ports:
+    - port: 80
+  type: ClusterIP
