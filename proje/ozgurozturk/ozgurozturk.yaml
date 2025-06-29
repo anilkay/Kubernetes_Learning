@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ozgurozturkapp
+spec:
+  replicas: 10
+  strategy:
+     type: RollingUpdate
+     rollingUpdate:
+        maxUnavailable: 2
+        maxSurge: 0
+  selector:
+    matchLabels:
+      app: ozgurapp
+  template:
+    metadata:
+      labels:
+        app: ozgurapp
+    spec:
+      affinity:
+       nodeAffinity:
+         requiredDuringSchedulingIgnoredDuringExecution:
+           nodeSelectorTerms:
+             - matchExpressions:
+                 - key: kubernetes.io/arch
+                   operator: In
+                   values:
+                     - amd64
+      containers:
+      - name: ozgurozturkcontainer
+        image: ozgurozturknet/k8s:v2
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        livenessProbe:
+           httpGet:
+             path: /healthcheck
+             port: 80
+           initialDelaySeconds: 30
+           periodSeconds: 10 
+        readinessProbe:
+          httpGet: 
+             path: /ready
+             port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10        
+        ports:
+        - containerPort: 80
