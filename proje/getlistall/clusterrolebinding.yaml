@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ger-list-all
+subjects:
+  - kind: ServiceAccount
+    name: listallresources
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: listall
+  apiGroup: rbac.authorization.k8s.io
