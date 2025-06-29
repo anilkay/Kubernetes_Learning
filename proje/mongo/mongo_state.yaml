@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo
+  namespace: mongodb
+spec:
+  serviceName: "mongo-set"
+  replicas: 3
+  selector:
+    matchLabels:
+      role: mongo
+      environment: test
+  template:
+    metadata:
+      labels:
+        role: mongo
+        environment: test
+        app: mongo
+    spec:
+      terminationGracePeriodSeconds: 10
+      serviceAccountName: mongo-sa
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                      - amd64
+      containers:
+        - name: mongo
+          image: mongo:4.4
+          args:
+           - "--replSet=rs0"
+           - "--bind_ip_all"
+           - "--dbpath=/data/db"
+           - "--setParameter"
+           - "enableTestCommands=1"
+           - "--wiredTigerDirectoryForIndexes"
+           - "--logpath=/dev/stdout"
+          command:
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongo-persistent-storage
+              mountPath: /data/db
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-persistent-storage
+      spec:
+        storageClassName: "longhorn"
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
