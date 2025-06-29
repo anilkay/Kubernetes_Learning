@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentdset
+  namespace: fluentd
+spec:
+  selector:
+    matchLabels:
+      app: fluentds
+  template:
+    metadata:
+      labels:
+        app: fluentds
+    spec:
+      containers:
+      - name: myapp
+        image: fluentd:v1.18.0-debian-1.0
